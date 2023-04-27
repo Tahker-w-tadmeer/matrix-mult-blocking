@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class SquareMatrix:
+class Matrix:
     def __init__(self, matrix, t=int):
         self.matrix = matrix
         self.type = t
@@ -10,7 +10,7 @@ class SquareMatrix:
     def random(n: int, seed: int = 0, t=int):
         if seed != 0:
             np.random.seed(seed)
-        return SquareMatrix(np.random.randint(0, 100, size=(n, n), dtype=t), t)
+        return Matrix(np.random.randint(0, 100, size=(n, n), dtype=t), t)
 
     def __str__(self):
         return f"{self.matrix}"

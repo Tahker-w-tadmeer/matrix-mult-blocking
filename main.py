@@ -1,20 +1,46 @@
-import time
-import pyautogui
-from matrix import SquareMatrix
+import matplotlib.pyplot as plt
+from matrix import Matrix
 from calculate_time import CalculateTime
+import sqlite3
 
-seed = round(time.time())
-A = SquareMatrix.random(100, round(time.time()))
-B = SquareMatrix.random(100, round(time.time()) + 15)
+con = sqlite3.connect("calculations.db")
+cur = con.cursor()
 
-# print(f"Matrix A:\n {A}\n")
-# print(f"Matrix B:\n {B}\n")
+cur.execute("DROP TABLE IF EXISTS calculations")
+cur.execute("""CREATE TABLE calculations(
+    size int,
+    blocks int,
+    time int
+)""")
 
-blocks = [
-    1, 8, 16, 24, 32, 48, 64
+matrices_sizes = [
+    3, 10, 25, 50, 75, 100, 500, 1000
 ]
 
-for block in blocks:
-    calc = CalculateTime(lambda: A.multiply(B, block))
-    time = calc.execute() / 10**6
-    print(f"Time with {block} blocks: {time}ms")
+blocks = [
+    1, 20, 100, 600, 1000, 1500
+]
+x = blocks
+
+for matrix in matrices_sizes:
+    A = Matrix.random(matrix)
+    B = Matrix.random(matrix)
+    y = []
+    data = []
+    for block in blocks:
+        calc = CalculateTime(lambda: A.multiply(B, block))
+        time = calc.execute()
+        y.append(time / 10**6)
+        data.append((matrix, block, time))
+
+    cur.executemany("INSERT INTO calculations VALUES (?, ?, ?)", data)
+    con.commit()
+
+    plt.plot(x, y, label=f"{matrix}x{matrix}", marker="o")
+
+cur.close()
+
+plt.legend()
+plt.xlabel("Block size")
+plt.ylabel("Execution time (ms)")
+plt.show()
